@@ -2,6 +2,8 @@
 
 **Messages that sing, and remember how they were written.**
 
+▶ **Try it: https://ap-edu.github.io/keysong/** (sound on)
+
 Typing a message is one of the most ordinary things we do on a screen: gray bubbles, blinking cursor, send.
 Keysong makes it something you *feel*:
 
@@ -22,7 +24,7 @@ node serve.js 8080     # another port
 
 `serve.js` also prints a **network address** (e.g. `http://192.168.1.23:3000`). Open Keysong through that address, and the links and QR codes it makes will open on phones on the same Wi-Fi. Windows may ask to allow Node through the firewall the first time.
 
-For links that work anywhere, deploy the folder as a static site (Netlify Drop, GitHub Pages, Vercel, etc.). There's nothing to build.
+For links that work anywhere, use the live site above. It's GitHub Pages serving this repo's `main` branch, so every push redeploys it within about a minute. Any static host works too, since there's nothing to build.
 
 Requires a modern browser (Chrome/Edge/Firefox/Safari from 2023 or later). Sound needs one click or tap first, because browsers require it.
 
