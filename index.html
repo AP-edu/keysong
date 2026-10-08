@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Keysong · every message has a song</title>
+  <meta name="description" content="Type a message and it becomes a song and a garden. Send it as a link, and they'll watch it being written: every pause, every erased letter.">
+  <meta name="theme-color" content="#132540">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🌷</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-mode="intro">
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <button id="moodChip" class="pill chip" type="button" title="Current mood and musical key">
+      <span class="emoji">🌿</span><span class="label">calm</span><span class="key">C major</span>
+    </button>
+    <div class="brand" aria-hidden="true">Keysong</div>
+    <div class="actions">
+      <button id="btnMute" class="pill icon" type="button" aria-label="Mute">🔊</button>
+      <button id="btnSkip" class="pill only-replay" type="button">⏭ <span class="txt">Skip</span></button>
+      <button id="btnNew" class="pill only-compose" type="button">✦ <span class="txt">New</span></button>
+      <button id="btnPlay" class="pill only-compose" type="button">▶ <span class="txt">Hear it</span></button>
+      <button id="btnSend" class="pill primary only-compose" type="button">💌 <span class="txt">Send</span></button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div id="forLine" class="for-line" hidden></div>
+    <div id="paper" class="paper"><span id="placeholder" class="placeholder">Write something to someone…</span><span id="caret" class="caret"></span></div>
+    <p id="hints" class="hints only-compose">magic words: <b>rain</b> · <b>stars</b> · <b>birthday</b> · <b>ocean</b> · <b>cat</b> · <b>love</b> · <b>sunshine</b> · <b>snow</b></p>
+    <p id="counter" class="counter only-compose"></p>
+  </main>
+
+  <textarea id="ta" class="ghost-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Write your message"></textarea>
+
+  <div id="pausePill" class="pause-pill" hidden></div>
+
+  <section id="intro" class="overlay" hidden>
+    <div class="intro-card">
+      <h1 class="wordmark" aria-label="Keysong"><span style="--i:0">K</span><span style="--i:1">e</span><span style="--i:2">y</span><span style="--i:3">s</span><span style="--i:4">o</span><span style="--i:5">n</span><span style="--i:6">g</span></h1>
+      <p class="tag">Messages that sing, and remember how they were written.</p>
+      <p class="how">Every letter is a note. Every word grows a flower. Your words change the key and the sky. Send it, and they’ll watch it being written: every pause, every erased letter.</p>
+      <div class="row">
+        <button id="btnStart" class="pill primary big" type="button">Start writing ✍️</button>
+        <button id="btnExample" class="pill big" type="button">▶ Hear an example</button>
+      </div>
+      <p class="fine">🔊 best with sound on · or just start typing</p>
+    </div>
+  </section>
+
+  <section id="envelope" class="overlay" hidden>
+    <div class="env-wrap">
+      <button id="btnOpen" class="envelope" type="button" aria-label="Open your Keysong">
+        <span class="env-back"></span>
+        <span class="env-letter"><span id="envTo">A Keysong for you</span></span>
+        <span class="env-front"></span>
+        <span class="env-flap"></span>
+        <span class="env-seal">♪</span>
+      </button>
+      <p id="envFrom" class="env-from">from someone</p>
+      <p class="fine">tap to open · sound on 🔊</p>
+    </div>
+  </section>
+
+  <section id="share" class="overlay dim" hidden>
+    <form id="shareForm" class="card" autocomplete="off">
+      <button type="button" class="close" id="btnCloseShare" aria-label="Close">✕</button>
+      <h2>Send as a Keysong 💌</h2>
+      <div class="fields">
+        <label>To <input id="fTo" maxlength="40" placeholder="their name"></label>
+        <label>From <input id="fFrom" maxlength="40" placeholder="your name"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="fMessy" checked>
+        <span>Include my pauses &amp; erased letters <small>the real, messy version: they’ll see you hesitate</small></span></label>
+      <button class="pill primary big wide" type="submit">Make the link</button>
+      <div id="shareOut" hidden>
+        <div class="linkrow"><input id="shareUrl" readonly aria-label="Your Keysong link"><button type="button" id="btnCopy" class="pill">Copy</button></div>
+        <div id="qr" class="qr"></div>
+        <p id="shareNote" class="fine"></p>
+        <a id="shareOpen" class="fine link" target="_blank" rel="noopener">open it the way they will ↗</a>
+      </div>
+    </form>
+  </section>
+
+  <section id="finale" class="finale" hidden>
+    <div class="card">
+      <h2 id="finTitle"></h2>
+      <ul id="finStats" class="stats"></ul>
+      <div id="finMoods" class="journey"></div>
+      <div id="finActions" class="row"></div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" async></script>
+  <script src="js/moods.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
