@@ -31,7 +31,7 @@ Requires a modern browser (Chrome/Edge/Firefox/Safari from 2023 or later). Sound
 ## 2-minute demo script
 
 1. **(0:00) The hook.** "We type messages all day. They all look the same, and they lose everything about *how* we wrote them: the hesitation, the deleted sentence, the 10 seconds before 'I'm sorry'."
-2. **(0:15) Hear an example.** Click **▶ Hear an example**, sound up. Let it play: the pause before *"i miss you"* (the caret thinks; a pill says *paused 7.5s*), stars and ocean waves on *night… stars… ocean*, a typo erased, confetti and fireworks on *birthday*, a cat walking by on *cat*, hearts on *love*. The finale shows the stats and the mood journey.
+2. **(0:15) Play the love letter.** Click **💝 Play a love letter**, sound up (it's also in the top bar as **💝 Love letter**). In about 55 seconds it sets off all 11 magic words and all 6 moods: a sunrise with birdsong, rain that turns into a rainbow, ocean waves under shooting stars, snow while a cat strolls through the garden, confetti and fireworks, embers and floating hearts. Near the end the writer types *"i like"*, pauses, erases it, and writes *"love you"*. The finale says *"longest pause: 3.9s, right before 'love you'"*. (For a shorter demo, **▶ Short example** runs about 40 seconds.)
 3. **(1:00) Live.** Click **✍️ Write your own** and type for a judge: `hey <name>! thanks for judging. it's raining here but the sunshine is coming`. They'll hear it and watch the sky change.
 4. **(1:30) Send.** Click **💌 Send**, enter their name, **Make the link**, and they scan the **QR code** with their phone. Their phone shows an envelope and replays what you just typed, hesitations and all.
 5. **(1:50) Close.** "No servers, no accounts. The song lives inside the link."

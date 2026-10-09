@@ -61,7 +61,7 @@ const MOODS = {
 
 // Words that pull the mood somewhere.
 const LEXICON = {
-  joy: 'happy happiness happier joy joyful yay great awesome amazing excited exciting fun funny laugh laughing haha lol lmao smile smiling celebrate congrats congratulations birthday bday party win won winning yes best wonderful fantastic sunshine sunny glad hooray woohoo dance dancing delight delighted cheers proud brilliant perfect epic woo yippee',
+  joy: 'happy happiness happier joy joyful yay great awesome amazing excited exciting fun funny laugh laughing haha lol lmao smile smiling celebrate congrats congratulations birthday bday party win won winning yes best wonderful fantastic sunshine sunny glad hooray woohoo dance dancing delight delighted cheers proud brilliant perfect epic woo yippee rainbow',
   love: 'love loved loving lovely heart hearts darling dear dearest honey sweet sweetheart kiss kisses hug hugs xoxo xo adore cute together forever always crush beautiful gorgeous mom mum mama dad papa grandma grandpa friend friends bestie thank thanks thankyou grateful family cuddle cuddles warm',
   blue: 'sad sadness sorry miss missed missing lonely alone cry crying cried tears tired lost hurt hurts gone goodbye bye broken sick hard difficult regret wish gray grey empty sigh blue worried anxious scared afraid sorrow grief remember memories rain rainy cold apart far',
   fire: 'angry anger mad hate hated furious annoyed annoying ugh damn stupid rage fire burn burning hot fight stop worst terrible awful frustrated frustrating wtf argh grr deadline deadlines traffic monday mondays seriously enough unfair',

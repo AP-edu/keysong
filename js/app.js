@@ -80,6 +80,7 @@
     }
     S.chars.push({ ch, el, word });
     placeholder.hidden = true;
+    fitPaper();
     if (!o.silent) feedback(ch, el, o.dt);
     if (isSep(ch)) commitWord(S.chars.length - 1, o);
     paper.scrollTop = paper.scrollHeight;
@@ -145,11 +146,16 @@
     if (c.word && !c.word.firstChild) c.word.remove();
     while (S.plants.length && S.plants[S.plants.length - 1].idx >= S.chars.length) Scene.unplant(S.plants.pop().plant);
     if (!S.chars.length && S.mode === 'compose') placeholder.hidden = false;
+    fitPaper();
   }
+
+  // Long letters get a smaller hand so more of them stays on screen.
+  const fitPaper = () => paper.classList.toggle('long', S.chars.length > 180);
 
   function resetAll() {
     paper.querySelectorAll('.word, .sp').forEach((n) => n.remove());
     S.chars = []; S.plants = []; S.trail = ['calm'];
+    fitPaper();
     S.mood.reset();
     Scene.clear();
     Sound.resetProgression();
@@ -211,7 +217,7 @@
   }
 
   // ---------- replay ----------
-  async function replay(events, onDone) {
+  async function replay(events, onDone, speed = 1) {
     const my = ++S.token;
     resetAll();
     placeholder.hidden = true;
@@ -220,7 +226,7 @@
     for (let i = 0; i < events.length; i++) {
       const [cs, c] = events[i], real = cs * 10;
       if (real >= 3000) showPause(real, my);
-      await sleep(i === 0 ? 600 : Math.min(real, 2400));
+      await sleep(i === 0 ? 600 : Math.min(real, 2400) / speed);
       if (my !== S.token) return;
       hidePause();
       if (c === 0) removeLast();
@@ -305,7 +311,7 @@
     const st = summarize(events);
     let title;
     if (kind === 'preview') title = 'This is what they’ll experience';
-    else if (p && p.example) title = `An example Keysong, written in ${fmtDur(st.total)}`;
+    else if (p && p.example) title = `${p.label[0].toUpperCase()}${p.label.slice(1)}, written in ${fmtDur(st.total)}`;
     else if (!messy) title = p && p.from ? `A Keysong from ${p.from}` : 'A Keysong, just for you';
     else title = `${p && p.from ? p.from : 'Someone'} wrote this in ${fmtDur(st.total)}`;
     $('finTitle').textContent = title;
@@ -334,10 +340,12 @@
 
     const journey = $('finMoods');
     journey.replaceChildren();
+    const compact = S.trail.length > 6;
     S.trail.forEach((mk, i) => {
       if (i) journey.append(el('span', 'arrow', '→'));
-      const M = MOODS[mk], chip = el('span', 'mchip', `${M.emoji} ${M.name}`);
+      const M = MOODS[mk], chip = el('span', 'mchip', compact ? M.emoji : `${M.emoji} ${M.name}`);
       chip.style.setProperty('--c', M.accent);
+      chip.title = M.name;
       journey.append(chip);
     });
 
@@ -352,9 +360,18 @@
       btn(p && p.example ? '✍️ Write your own' : '✍️ Write back', 'primary', writeBack);
     }
     $('finale').hidden = false;
+    // keep the end of the message (usually the most important line) visible above the card
+    const fin = $('finale'); // measured from layout, not getBoundingClientRect: it's mid slide-in animation
+    const finTop = window.innerHeight - parseFloat(getComputedStyle(fin).bottom) - fin.offsetHeight;
+    const room = finTop - paper.getBoundingClientRect().top - 16;
+    if (room > 80 && room < paper.offsetHeight) paper.style.maxHeight = room + 'px';
+    paper.scrollTop = paper.scrollHeight;
   }
 
-  function hideFinale() { $('finale').hidden = true; }
+  function hideFinale() {
+    $('finale').hidden = true;
+    paper.style.maxHeight = '';
+  }
 
   // ---------- flows ----------
   function hideOverlay(o) {
@@ -395,9 +412,9 @@
     const p = S.received;
     if (!p) return;
     hideFinale();
-    forLine.textContent = p.example ? 'an example Keysong' : [p.to && `for ${p.to}`, p.from && `from ${p.from}`].filter(Boolean).join(' · ');
+    forLine.textContent = p.example ? p.label : [p.to && `for ${p.to}`, p.from && `from ${p.from}`].filter(Boolean).join(' · ');
     forLine.hidden = !forLine.textContent;
-    replay(p.e, () => { setMode('received'); showFinale('received', p.e, !!p.m, p); });
+    replay(p.e, () => { setMode('received'); showFinale('received', p.e, !!p.m, p); }, p.speed || 1);
   }
 
   function writeBack() {
@@ -428,33 +445,59 @@
     setTimeout(() => { hideOverlay($('envelope')); playReceived(); }, 1100);
   });
 
-  // ---------- example ----------
-  function makeExample() {
-    let seed = 11;
-    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    const e = [];
+  // ---------- built-in demos ----------
+  // A pretend typist: turns a script into keystroke events with a human, seeded rhythm.
+  function typist(seed) {
+    const events = [];
     let wait = 0;
-    const push = (c, ms) => { e.push([Math.min(6000, Math.round((wait + ms) / 10)), c]); wait = 0; };
-    const type = (s, pace = 105) => {
-      let prev = '';
-      for (const g of graphemes(s)) {
-        let ms = pace * (0.55 + rnd() * 0.9);
-        if (prev === ' ') ms += 60 * rnd();
-        if (/[.,!?]/.test(prev)) ms += 260;
-        push(g, ms);
-        prev = g;
-      }
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const push = (c, ms) => { events.push([Math.min(6000, Math.round((wait + ms) / 10)), c]); wait = 0; };
+    return {
+      events,
+      type(s, pace = 105) {
+        let prev = '';
+        for (const g of graphemes(s)) {
+          let ms = pace * (0.55 + rnd() * 0.9);
+          if (prev === ' ') ms += 60 * rnd();
+          if (/[.,!?]/.test(prev)) ms += 260;
+          push(g, ms);
+          prev = g;
+        }
+        return this;
+      },
+      pause(ms) { wait += ms; return this; },
+      erase(n) { for (let i = 0; i < n; i++) push(0, 140 + rnd() * 60); return this; },
     };
-    const pause = (ms) => { wait += ms; };
-    const erase = (n) => { for (let i = 0; i < n; i++) push(0, 140 + rnd() * 60); };
+  }
 
-    type('hey you.'); pause(1300); type('\n');
-    type("sorry it's been so long. "); pause(7400); type('i miss you.'); pause(900); type('\n');
-    type('remember that night we counted stars by the ocaen'); pause(500); erase(3); type('ean?'); pause(1500); type('\n');
-    type('anyway... happy birthday!! 🎉'); pause(1600); type('\n');
-    type('give the cat a kiss from me.'); pause(5200); type('\n');
-    type('love you ❤️', 130);
-    return { v: 1, to: '', from: '', m: 1, e, example: true };
+  const demo = (label, events) => ({ v: 1, to: '', from: '', m: 1, e: events, example: true, label });
+
+  function makeExample() {
+    const t = typist(11);
+    t.type('hey you.').pause(1300).type('\n')
+      .type("sorry it's been so long. ").pause(7400).type('i miss you.').pause(900).type('\n')
+      .type('remember that night we counted stars by the ocaen').pause(500).erase(3).type('ean?').pause(1500).type('\n')
+      .type('anyway... happy birthday!! 🎉').pause(1600).type('\n')
+      .type('give the cat a kiss from me.').pause(5200).type('\n')
+      .type('love you ❤️', 130);
+    return demo('an example Keysong', t.events);
+  }
+
+  // Every magic word Keysong knows, and all six moods, in one letter.
+  function makeLoveLetter() {
+    const t = typist(29), p = 70;
+    t.type('my dearest,', 120).pause(1400).type('\n')
+      .type('do you remember the morning we met? ', p).pause(900)
+      .type('sunshine on everything, and birds singing like they knew.', p).pause(1500).type('\n')
+      .type('then came the rain. ', p).pause(1200)
+      .type('you shared your umbrella, and a rainbow appeared, just for us.', p).pause(1500).type('\n')
+      .type('we spent that summer by the ocean, and counted stars until midnigth', p).pause(500).erase(2).type('ht.', p).pause(1500).type('\n')
+      .type('in winter, the snow fell softly while our cat chased every flake.', p).pause(1500).type('\n')
+      .type('5 birthdays later, i celebrate the day you smiled at me.', p).pause(1400).type('\n')
+      .type('you set my heart on ', p).pause(2200).type('fire.', 120).pause(1800).type('\n')
+      .pause(1200).type('i like', 130).pause(1400).erase(4).pause(3800)
+      .type('love you. today, tomorrow, always ', 110).pause(700).type('❤️');
+    return { ...demo('a love letter', t.events), speed: 1.2 };
   }
 
   // ---------- sharing ----------
@@ -547,13 +590,32 @@
     setTimeout(() => { placeholder.textContent = PROMPTS[promptIdx]; placeholder.classList.remove('swap'); }, 350);
   }, 4200);
 
-  $('btnStart').addEventListener('click', () => startCompose(true));
-  $('btnExample').addEventListener('click', () => {
+  function playDemo(make) {
     Sound.resume();
     hideOverlay($('intro'));
-    S.received = makeExample();
+    S.received = make();
     playReceived();
+  }
+
+  // From the top bar the demo would replace what you're writing, so it asks for a second tap.
+  let demoArmed = 0;
+  $('btnDemo').addEventListener('click', () => {
+    const label = $('btnDemo').querySelector('.txt');
+    if (S.mode === 'compose' && S.chars.length && Date.now() - demoArmed > 2500) {
+      demoArmed = Date.now();
+      label.textContent = 'Replace your text?';
+      toast('Tap 💝 again to replace your message with the love letter demo');
+      setTimeout(() => { label.textContent = 'Love letter'; }, 2500);
+      return focusInput();
+    }
+    demoArmed = 0;
+    label.textContent = 'Love letter';
+    playDemo(makeLoveLetter);
   });
+
+  $('btnStart').addEventListener('click', () => startCompose(true));
+  $('btnLove').addEventListener('click', () => playDemo(makeLoveLetter));
+  $('btnExample').addEventListener('click', () => playDemo(makeExample));
   $('btnPlay').addEventListener('click', preview);
   $('btnSend').addEventListener('click', openShare);
   $('btnNew').addEventListener('click', newPage);
