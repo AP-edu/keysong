@@ -217,7 +217,8 @@
   }
 
   // ---------- replay ----------
-  async function replay(events, onDone, speed = 1) {
+  // Long pauses are shortened to maxPause so replays keep moving (the pill still shows the real length).
+  async function replay(events, onDone, speed = 1, maxPause = 2400) {
     const my = ++S.token;
     resetAll();
     placeholder.hidden = true;
@@ -226,7 +227,7 @@
     for (let i = 0; i < events.length; i++) {
       const [cs, c] = events[i], real = cs * 10;
       if (real >= 3000) showPause(real, my);
-      await sleep(i === 0 ? 600 : Math.min(real, 2400) / speed);
+      await sleep(i === 0 ? 600 : Math.min(real, maxPause) / speed);
       if (my !== S.token) return;
       hidePause();
       if (c === 0) removeLast();
@@ -414,7 +415,7 @@
     hideFinale();
     forLine.textContent = p.example ? p.label : [p.to && `for ${p.to}`, p.from && `from ${p.from}`].filter(Boolean).join(' · ');
     forLine.hidden = !forLine.textContent;
-    replay(p.e, () => { setMode('received'); showFinale('received', p.e, !!p.m, p); }, p.speed || 1);
+    replay(p.e, () => { setMode('received'); showFinale('received', p.e, !!p.m, p); }, p.speed || 1, p.maxPause);
   }
 
   function writeBack() {
@@ -466,7 +467,8 @@
         return this;
       },
       pause(ms) { wait += ms; return this; },
-      erase(n) { for (let i = 0; i < n; i++) push(0, 140 + rnd() * 60); return this; },
+      // pace: ~45 is holding backspace in frustration, ~170 is deleting letter by letter, reluctantly
+      erase(n, pace) { for (let i = 0; i < n; i++) push(0, pace ? pace * (0.8 + rnd() * 0.4) : 140 + rnd() * 60); return this; },
     };
   }
 
@@ -485,19 +487,25 @@
 
   // Every magic word Keysong knows, and all six moods, in one letter.
   function makeLoveLetter() {
-    const t = typist(29), p = 70;
+    const t = typist(29), p = 60;
     t.type('my dearest,', 120).pause(1400).type('\n')
       .type('do you remember the morning we met? ', p).pause(900)
-      .type('sunshine on everything, and birds singing like they knew.', p).pause(1500).type('\n')
+      .type('sunshine on everything, and birds singing like they knew.', p).pause(1200).type('\n')
       .type('then came the rain. ', p).pause(1200)
-      .type('you shared your umbrella, and a rainbow appeared, just for us.', p).pause(1500).type('\n')
-      .type('we spent that summer by the ocean, and counted stars until midnigth', p).pause(500).erase(2).type('ht.', p).pause(1500).type('\n')
-      .type('in winter, the snow fell softly while our cat chased every flake.', p).pause(1500).type('\n')
+      .type('you shared your umbrella, and a rainbow appeared, just for us.', p).pause(1200).type('\n')
+      .type('we spent that summer by the ocean, and counted stars until midnigth', p).pause(500).erase(2).type('ht.', p).pause(1200).type('\n')
+      .type('in winter, the snow fell softly while our cat chased every flake.', p).pause(1200).type('\n')
       .type('5 birthdays later, i celebrate the day you smiled at me.', p).pause(1400).type('\n')
       .type('you set my heart on ', p).pause(2200).type('fire.', 120).pause(1800).type('\n')
-      .pause(1200).type('i like', 130).pause(1400).erase(4).pause(3800)
-      .type('love you. today, tomorrow, always ', 110).pause(700).type('❤️');
-    return { ...demo('a love letter', t.events), speed: 1.2 };
+      // ...and now the hard part: finding the right word
+      .type('and you are my ', 95).pause(2600)
+      .type('everything', 85).pause(1500).erase(10, 45)              // too cliché, gone in a flash
+      .pause(2200).type('whole wor', 150).pause(1300).erase(9, 110)  // no...
+      .pause(3200).type('favorite pe', 140).pause(2100).erase(11, 175) // closer, but no
+      .pause(6500).type('ho', 230).pause(1500).type('me.', 260)      // there it is
+      .pause(2400).type('\n')
+      .type('i love you. today, tomorrow, always ', 105).pause(800).type('❤️');
+    return { ...demo('a love letter', t.events), speed: 1.2, maxPause: 3600 };
   }
 
   // ---------- sharing ----------
