@@ -23,11 +23,11 @@ const Sound = (() => {
     comp.attack.value = 0.004; comp.release.value = 0.25;
     master.connect(comp); comp.connect(ctx.destination);
 
-    dry = ctx.createGain(); dry.gain.value = 0.75; dry.connect(master);
+    dry = ctx.createGain(); dry.gain.value = 1.0; dry.connect(master);
 
     const verb = ctx.createConvolver();
     verb.buffer = impulse(3.4, 2.6);
-    wetIn = ctx.createGain(); wetIn.gain.value = 0.5;
+    wetIn = ctx.createGain(); wetIn.gain.value = 0.62;
     wetIn.connect(verb); verb.connect(master);
 
     const delay = ctx.createDelay(1.5), fb = ctx.createGain(), tone = ctx.createBiquadFilter();
@@ -89,9 +89,9 @@ const Sound = (() => {
         h.connect(hg); hg.connect(out);
         peak = 0.32; attack = 0.003; break;
       }
-      case 'bell2': fm(2, 1.1, dur * 0.6); peak = 0.2; break;
+      case 'bell2': fm(2, 1.1, dur * 0.6); peak = 0.27; break;
       case 'epiano': fm(1, 0.9, dur * 0.5); peak = 0.24; attack = 0.008; break;
-      case 'bell': fm(3.5, 1.7, dur * 0.5); peak = 0.17; break;
+      case 'bell': fm(3.5, 1.7, dur * 0.5); peak = 0.24; break;
       case 'gong': fm(1.41, 2.2, dur * 0.7); peak = 0.22; attack = 0.01; break;
       case 'pluck': {
         const lp = ctx.createBiquadFilter();
@@ -100,7 +100,7 @@ const Sound = (() => {
         lp.frequency.exponentialRampToValueAtTime(f * 1.3, t + 0.25);
         osc('sawtooth', f).connect(lp);
         const b = osc('sawtooth', f); b.detune.value = 9; b.connect(lp);
-        lp.connect(out); peak = 0.16; attack = 0.003; break;
+        lp.connect(out); peak = 0.19; attack = 0.003; break;
       }
       case 'glass': {
         osc('sine', f).connect(out);
@@ -179,7 +179,7 @@ const Sound = (() => {
       const vowel = 'aeiouy'.includes(base);
       let m = noteAt(M, li % 10);
       if (ch !== lower) m += 12;
-      tone(M.voice, m, t, vel * (vowel ? 1 : 0.8), vowel ? 1.4 : 0.5, { pan, wet: 0.35, echo: vowel ? 0.25 : 0.06 });
+      tone(M.voice, m, t, vel * (vowel ? 1 : 0.95), vowel ? 1.4 : 0.5, { pan, wet: 0.35, echo: vowel ? 0.25 : 0.06 });
       return;
     }
     if (/^[0-9]$/.test(ch)) { tone('kalimba', noteAt(M, +ch) - 12, t, vel, 0.6, { pan, wet: 0.3 }); return; }
@@ -202,14 +202,14 @@ const Sound = (() => {
         return;
       }
       case '!':
-        for (let i = 0; i < 6; i++) tone('bell', noteAt(M, 5 + i) + 12, t + i * 0.045, 0.35, 0.5, { pan, wet: 0.5, echo: 0.3 });
+        for (let i = 0; i < 6; i++) tone('bell', noteAt(M, 5 + i) + 12, t + i * 0.045, 0.6, 0.5, { pan, wet: 0.5, echo: 0.3 });
         noise(t, 0.16, { type: 'highpass', f0: 6000, peak: 0.05, attack: 0.005, release: 0.12 });
         return;
       case '?':
-        [2, 3, 4, 6].forEach((d, i) => tone('glass', noteAt(M, d + 5), t + i * 0.1, 0.5, i === 3 ? 1.4 : 0.5, { pan, wet: 0.5, echo: 0.2 }));
+        [2, 3, 4, 6].forEach((d, i) => tone('glass', noteAt(M, d + 5), t + i * 0.1, 0.7, i === 3 ? 1.4 : 0.5, { pan, wet: 0.5, echo: 0.2 }));
         return;
       case ',':
-        noise(t, 0.35, { f0: 500, f1: 1500, q: 0.8, peak: 0.05, attack: 0.12, release: 0.2 });
+        noise(t, 0.35, { f0: 500, f1: 1500, q: 0.8, peak: 0.14, attack: 0.12, release: 0.2 });
         return;
       default: {
         let h = 0;
@@ -226,7 +226,7 @@ const Sound = (() => {
     o.frequency.setValueAtTime(1100, t);
     o.frequency.exponentialRampToValueAtTime(180, t + 0.12);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.12, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.3, t + 0.008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
     o.connect(g); route(g, { pan, wet: 0.1 });
     o.start(t); o.stop(t + 0.17);
@@ -267,7 +267,7 @@ const Sound = (() => {
       o.frequency.exponentialRampToValueAtTime(f * 1.5, s + 0.04);
       o.frequency.exponentialRampToValueAtTime(f * 1.1, s + 0.08);
       g.gain.setValueAtTime(0.0001, s);
-      g.gain.exponentialRampToValueAtTime(0.1, s + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.22, s + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, s + 0.09);
       o.connect(g); route(g, { pan, wet: 0.3, echo: 0.15 });
       o.start(s); o.stop(s + 0.1);
@@ -279,7 +279,7 @@ const Sound = (() => {
     o.frequency.setValueAtTime(95, t);
     o.frequency.exponentialRampToValueAtTime(45, t + 0.14);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.55, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.4, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
     o.connect(g); route(g, { wet: 0.1 });
     o.start(t); o.stop(t + 0.22);
@@ -302,6 +302,14 @@ const Sound = (() => {
     }
   }
 
+  // The envelope opening: a little rising arpeggio.
+  function chime(mk) {
+    if (!ready()) return;
+    const M = MOODS[mk], t = ctx.currentTime + 0.02;
+    [0, 2, 3, 5, 7].forEach((d, i) => tone('glass', noteAt(M, d) + 12, t + i * 0.09, 0.55, 1.6, { pan: -0.4 + i * 0.2, wet: 0.6, echo: 0.3 }));
+    noise(t, 0.5, { type: 'bandpass', f0: 2500, f1: 6000, q: 0.8, peak: 0.05, attack: 0.05, release: 0.35, wet: 0.4 });
+  }
+
   function magic(name, mk) {
     if (!ready()) return;
     const now = ctx.currentTime;
@@ -310,23 +318,23 @@ const Sound = (() => {
     const M = MOODS[mk], t = now + 0.02;
     switch (name) {
       case 'rain':
-        noise(t, 8, { type: 'lowpass', f0: 1600, q: 0.5, peak: 0.07, attack: 1.5, release: 2.5, wet: 0.2 });
-        for (let i = 0; i < 12; i++) tone('glass', noteAt(M, 7 + ((Math.random() * 6) | 0)) + 12, t + rand(0.3, 7), 0.22, 0.5, { pan: rand(-0.8, 0.8), wet: 0.5 });
+        noise(t, 8, { type: 'lowpass', f0: 1600, q: 0.5, peak: 0.16, attack: 1.5, release: 2.5, wet: 0.2 });
+        for (let i = 0; i < 12; i++) tone('glass', noteAt(M, 7 + ((Math.random() * 6) | 0)) + 12, t + rand(0.3, 7), 0.35, 0.5, { pan: rand(-0.8, 0.8), wet: 0.5 });
         break;
       case 'snow':
-        for (let i = 0; i < 8; i++) tone('glass', noteAt(M, 8 + ((Math.random() * 5) | 0)) + 12, t + i * 0.7 + rand(0, 0.3), 0.25, 1.8, { pan: rand(-0.7, 0.7), wet: 0.7, echo: 0.4 });
+        for (let i = 0; i < 8; i++) tone('glass', noteAt(M, 8 + ((Math.random() * 5) | 0)) + 12, t + i * 0.7 + rand(0, 0.3), 0.5, 1.8, { pan: rand(-0.7, 0.7), wet: 0.7, echo: 0.4 });
         break;
       case 'stars':
-        for (let i = 0; i < 8; i++) tone('bell', noteAt(M, 5 + i) + 12, t + i * 0.12, 0.3, 1.2, { pan: -0.6 + i * 0.17, wet: 0.6, echo: 0.4 });
+        for (let i = 0; i < 8; i++) tone('bell', noteAt(M, 5 + i) + 12, t + i * 0.12, 0.45, 1.2, { pan: -0.6 + i * 0.17, wet: 0.6, echo: 0.4 });
         noise(t, 2, { type: 'highpass', f0: 8000, peak: 0.02, attack: 0.5, release: 1.2, wet: 0.8 });
         break;
       case 'ocean':
-        noise(t, 3.6, { type: 'lowpass', f0: 350, f1: 1400, q: 0.6, peak: 0.1, attack: 1.6, release: 1.8, wet: 0.4 });
-        noise(t + 3.2, 3.6, { type: 'lowpass', f0: 350, f1: 1200, q: 0.6, peak: 0.08, attack: 1.6, release: 1.8, wet: 0.4 });
+        noise(t, 3.6, { type: 'lowpass', f0: 350, f1: 1400, q: 0.6, peak: 0.25, attack: 1.6, release: 1.8, wet: 0.4 });
+        noise(t + 3.2, 3.6, { type: 'lowpass', f0: 350, f1: 1200, q: 0.6, peak: 0.2, attack: 1.6, release: 1.8, wet: 0.4 });
         break;
       case 'fire':
-        noise(t, 5, { type: 'lowpass', f0: 180, q: 0.7, peak: 0.08, attack: 0.8, release: 1.5 });
-        for (let i = 0; i < 30; i++) noise(t + rand(0, 5), 0.03, { type: 'highpass', f0: 1800, peak: rand(0.04, 0.12), attack: 0.002, release: 0.025, pan: rand(-0.8, 0.8), wet: 0.1 });
+        noise(t, 5, { type: 'lowpass', f0: 180, q: 0.7, peak: 0.18, attack: 0.8, release: 1.5 });
+        for (let i = 0; i < 30; i++) noise(t + rand(0, 5), 0.03, { type: 'highpass', f0: 1800, peak: rand(0.1, 0.25), attack: 0.002, release: 0.025, pan: rand(-0.8, 0.8), wet: 0.1 });
         break;
       case 'party': {
         horn(t);
@@ -338,7 +346,7 @@ const Sound = (() => {
       case 'hearts': {
         thump(t); thump(t + 0.22);
         const c = chordNotes(M, 0, M.root + 12);
-        c.forEach((m, i) => tone('glass', m, t + 0.5 + i * 0.05, 0.4, 1.8, { wet: 0.6, echo: 0.3 }));
+        c.forEach((m, i) => tone('glass', m, t + 0.5 + i * 0.05, 0.5, 1.8, { wet: 0.6, echo: 0.3 }));
         break;
       }
       case 'sun': {
@@ -354,13 +362,13 @@ const Sound = (() => {
         for (let i = 0; i < 5; i++) chirp(t + rand(0.2, 3.5), rand(2400, 3600), rand(-0.8, 0.8));
         break;
       case 'rainbow':
-        for (let i = 0; i < 10; i++) tone('glass', noteAt(M, i) + 12, t + i * 0.07, 0.4, 1.2, { pan: -0.7 + i * 0.15, wet: 0.6, echo: 0.3 });
+        for (let i = 0; i < 10; i++) tone('glass', noteAt(M, i) + 12, t + i * 0.07, 0.55, 1.2, { pan: -0.7 + i * 0.15, wet: 0.6, echo: 0.3 });
         break;
     }
   }
 
   return {
-    init, resume, key, backspace, moodShift, magic,
+    init, resume, key, backspace, moodShift, magic, chime,
     resetProgression() { step = 0; },
     setMuted(v) {
       muted = v;

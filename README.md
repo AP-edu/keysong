@@ -2,7 +2,13 @@
 
 **Messages that sing, and remember how they were written.**
 
-▶ **Try it: https://ap-edu.github.io/keysong/** (sound on)
+▶ **Try it: https://ap-edu.github.io/keysong/** (sound on, then press **💝 Play a love letter**)
+
+![A love letter being typed: rain falls, a rainbow arcs over a garden of sunflowers and bluebells](docs/rainbow.jpg)
+
+| Snow, stars and a cat | Searching for the right word | On a phone |
+|---|---|---|
+| ![A starry night with a crescent moon, fireflies, and an orange cat walking through the flowers](docs/cat.jpg) | ![The writer has deleted three tries and paused for 6.7 seconds before the last word](docs/struggle.jpg) | ![The full love letter on a phone screen above a dense garden](docs/phone.jpg) |
 
 Typing a message is one of the most ordinary things we do on a screen: gray bubbles, blinking cursor, send.
 Keysong makes it something you *feel*:
@@ -52,3 +58,12 @@ Plain HTML/CSS/JS, no build step, no frameworks.
 | `serve.js` | a zero-dependency static file server |
 
 The QR code uses `qrcode-generator` from jsDelivr. If you're offline it's skipped and everything else still works.
+
+### Small things that are easy to miss
+
+- The sound mix was balanced by **measuring it**: every note, key and effect was rendered offline in a headless browser and its loudness measured, so the six mood voices sit within 2 dB of each other and nothing clips.
+- Calm, wistful and dreamy nights get a **crescent moon** and **fireflies**. On phones, the browser's address bar takes on the colour of the sky.
+- Rejected words don't just vanish: their letters **tumble into the garden**, and if a word had already grown a flower, the flower **wilts**.
+- Shared links show a **preview card** in chat apps and social networks.
+- With *reduce motion* turned on in your system settings, Keysong uses far fewer particles and less swaying.
+- On iPhone, Web Audio is silent while the ringer switch is on mute, so flip it before a demo.

@@ -10,7 +10,7 @@ const MOODS = {
     voice: 'kalimba',
     sky: ['#132540', '#3b6c85'], hill: '#173a2f', ground: '#0d211b',
     accent: '#8fe3cf', text: '#eef8f5', stem: '#5fae8a', canopy: '#3f9a70',
-    stars: 0.35, flower: 'daisy',
+    stars: 0.35, moon: 0.35, flies: 0.5, flower: 'daisy',
   },
   joy: {
     name: 'joyful', emoji: '☀️', key: 'D major',
@@ -19,7 +19,7 @@ const MOODS = {
     voice: 'bell2',
     sky: ['#3b1d5e', '#e9804a'], hill: '#45291a', ground: '#23140d',
     accent: '#ffd166', text: '#fff6dc', stem: '#7cb35f', canopy: '#e9a23b',
-    stars: 0.06, flower: 'sunflower',
+    stars: 0.06, moon: 0, flies: 0, flower: 'sunflower',
   },
   love: {
     name: 'tender', emoji: '💗', key: 'F major 7',
@@ -28,7 +28,7 @@ const MOODS = {
     voice: 'epiano',
     sky: ['#2b0d2e', '#a8366c'], hill: '#3a1230', ground: '#200a1a',
     accent: '#ff8fab', text: '#ffe6ee', stem: '#6e9f6a', canopy: '#f49ac1',
-    stars: 0.22, flower: 'heart',
+    stars: 0.22, moon: 0.25, flies: 0.35, flower: 'heart',
   },
   blue: {
     name: 'wistful', emoji: '🌧️', key: 'A minor',
@@ -37,7 +37,7 @@ const MOODS = {
     voice: 'epiano',
     sky: ['#060d22', '#25406f'], hill: '#122339', ground: '#08111f',
     accent: '#86b6ff', text: '#dde9ff', stem: '#4f8088', canopy: '#4467a8',
-    stars: 0.6, flower: 'bluebell',
+    stars: 0.6, moon: 0.85, flies: 0.6, flower: 'bluebell',
   },
   fire: {
     name: 'fiery', emoji: '🔥', key: 'E blues',
@@ -46,7 +46,7 @@ const MOODS = {
     voice: 'pluck',
     sky: ['#1a0505', '#8f2a12'], hill: '#2a0c08', ground: '#140605',
     accent: '#ff7a3d', text: '#ffe2d2', stem: '#7d6d3c', canopy: '#c2452d',
-    stars: 0.04, flower: 'flame',
+    stars: 0.04, moon: 0, flies: 0, flower: 'flame',
   },
   wonder: {
     name: 'dreamy', emoji: '✨', key: 'G lydian',
@@ -55,7 +55,7 @@ const MOODS = {
     voice: 'bell',
     sky: ['#07051a', '#3b2470'], hill: '#1b1240', ground: '#0c0820',
     accent: '#c7a8ff', text: '#efe6ff', stem: '#6c7fd8', canopy: '#8b7cf6',
-    stars: 1, flower: 'orb',
+    stars: 1, moon: 1, flies: 1, flower: 'orb',
   },
 };
 

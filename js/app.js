@@ -7,6 +7,7 @@
   const $ = (id) => document.getElementById(id);
   const paper = $('paper'), caret = $('caret'), ta = $('ta'), placeholder = $('placeholder');
   const pill = $('pausePill'), forLine = $('forLine'), hints = $('hints'), counter = $('counter');
+  const themeColor = document.querySelector('meta[name="theme-color"]');
   const MAX_CHARS = 500, MAX_EVENTS = 4000;
 
   const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
@@ -46,6 +47,7 @@
     const root = document.documentElement.style;
     root.setProperty('--accent', M.accent);
     root.setProperty('--ink', M.text);
+    themeColor.content = M.sky[0]; // the phone's browser bar follows the sky
     const chip = $('moodChip');
     chip.querySelector('.emoji').textContent = M.emoji;
     chip.querySelector('.label').textContent = M.name;
@@ -442,6 +444,7 @@
 
   $('btnOpen').addEventListener('click', () => {
     Sound.resume();
+    setTimeout(() => Sound.chime('calm'), 150); // after resume() has had a moment to unlock audio
     $('btnOpen').classList.add('open');
     setTimeout(() => { hideOverlay($('envelope')); playReceived(); }, 1100);
   });
@@ -678,6 +681,7 @@
       }
     }
     $('intro').hidden = false;
+    Scene.decorate();
   }
 
   boot();

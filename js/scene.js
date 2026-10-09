@@ -7,8 +7,9 @@ const Scene = (() => {
   const cx = cv.getContext('2d');
   const TAU = Math.PI * 2;
   let W = 0, H = 0, U = 1, T = 0, last = 0;
-  const plants = [], parts = [], effects = [], stars = [];
-  let planted = 0, breeze = 0, starBoost = 0;
+  const plants = [], parts = [], effects = [], stars = [], flies = [];
+  let planted = 0, breeze = 0, starBoost = 0, decoToken = 0;
+  const gentle = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -25,11 +26,12 @@ const Scene = (() => {
     const M = MOODS[mk];
     tgt.sky0 = hex(M.sky[0]); tgt.sky1 = hex(M.sky[1]);
     tgt.hill = hex(M.hill); tgt.ground = hex(M.ground);
-    tgt.stars = M.stars;
+    tgt.stars = M.stars; tgt.moon = M.moon; tgt.flies = M.flies;
   }
+  const FADE_KEYS = ['stars', 'moon', 'flies'];
   setMood('calm');
   COLOR_KEYS.forEach((k) => (col[k] = tgt[k].slice()));
-  col.stars = tgt.stars;
+  FADE_KEYS.forEach((k) => (col[k] = tgt[k]));
 
   // ---- landscape ----
   const ROWS = [{ s: 0.95, a: 0.8 }, { s: 1.15, a: 0.95 }, { s: 1.38, a: 1 }];
@@ -86,7 +88,18 @@ const Scene = (() => {
 
   function unplant(p) { if (p && !p.wilt) p.wilt = T; }
 
+  // A little garden for the intro screen, so the first thing you see is alive.
+  function decorate() {
+    const my = ++decoToken;
+    [['hello', 'calm'], ['sing', 'joy'], ['love', 'love'], ['dream', 'wonder'], ['rain', 'blue'], ['flowers', 'joy'],
+      ['everything', 'calm'], ['music', 'wonder'], ['heart', 'love'], ['remember', 'blue'], ['spark', 'fire'],
+      ['words', 'calm'], ['together', 'love'], ['stars', 'wonder'], ['sunshine', 'joy'], ['quiet', 'calm'],
+      ['beautiful', 'love'], ['glow', 'wonder']]
+      .forEach(([w, m], i) => setTimeout(() => { if (my === decoToken) plant(w, m); }, 400 + i * 120));
+  }
+
   function clear() {
+    decoToken++;
     plants.forEach((p, i) => { if (!p.wilt) p.wilt = T + i * 0.012; });
     planted = 0;
     effects.length = 0;
@@ -229,7 +242,7 @@ const Scene = (() => {
   function burst(x, y, o = {}) {
     const { n = 6, color = '#ffffff', speed = 70, up = 40, life = 1, size = 2.4, gravity = -30, drag = 0.985 } = o;
     const c = hex(color);
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < (gentle ? Math.ceil(n * 0.3) : n); i++) {
       const a = Math.random() * TAU, v = speed * (0.4 + Math.random() * 0.8);
       parts.push({ kind: 'dot', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - up, g: gravity, drag, age: 0, life: life * (0.6 + Math.random() * 0.8), size: size * (0.6 + Math.random() * 0.9), c });
     }
@@ -422,7 +435,7 @@ const Scene = (() => {
 
     party() {
       const booms = [0.35, 0.95, 1.6]; let b = 0;
-      for (let i = 0; i < 150; i++) {
+      for (let i = 0; i < (gentle ? 40 : 150); i++) {
         const left = i % 2 === 0;
         parts.push({
           kind: 'confetti', x: left ? -10 : W + 10, y: H * 0.88,
@@ -580,7 +593,7 @@ const Scene = (() => {
     last = now; T += dt;
     const k = 1 - Math.exp(-dt * 1.4);
     for (const key of COLOR_KEYS) for (let i = 0; i < 3; i++) col[key][i] += (tgt[key][i] - col[key][i]) * k;
-    col.stars += (tgt.stars - col.stars) * k;
+    for (const key of FADE_KEYS) col[key] += (tgt[key] - col[key]) * k;
     breeze *= Math.exp(-dt * 1.6);
     starBoost = Math.max(0, starBoost - dt * 0.08);
     for (let i = effects.length - 1; i >= 0; i--) { const e = effects[i]; e.age += dt; if (!e.step(dt, e.age)) effects.splice(i, 1); }
@@ -602,6 +615,43 @@ const Scene = (() => {
     cx.globalAlpha = 1;
   }
 
+  // A crescent: a bright disc with a second disc of sky laid over it.
+  function drawMoon(sky) {
+    if (col.moon < 0.02 || W < 640) return;
+    const x = W * 0.09, y = H * 0.2, r = 24 * U;
+    cx.globalAlpha = col.moon;
+    const glow = cx.createRadialGradient(x, y, r * 0.8, x, y, r * 4.5);
+    glow.addColorStop(0, 'rgba(220,228,255,.22)'); glow.addColorStop(1, 'rgba(220,228,255,0)');
+    cx.fillStyle = glow; cx.beginPath(); cx.arc(x, y, r * 4.5, 0, TAU); cx.fill();
+    cx.fillStyle = '#eef1ff'; cx.beginPath(); cx.arc(x, y, r, 0, TAU); cx.fill();
+    cx.save();
+    cx.beginPath(); cx.arc(x, y, r + 0.5, 0, TAU); cx.clip();
+    cx.fillStyle = sky; cx.beginPath(); cx.arc(x + r * 0.45, y - r * 0.2, r * 0.9, 0, TAU); cx.fill();
+    cx.restore();
+    cx.globalAlpha = 1;
+  }
+
+  // Fireflies wander over the garden on quiet nights.
+  function drawFlies() {
+    if (col.flies < 0.02) return;
+    cx.globalCompositeOperation = 'lighter';
+    for (const f of flies) {
+      const blink = Math.pow(Math.max(0, Math.sin(T * f.sp * 1.7 + f.ph)), 2);
+      if (blink < 0.02) continue;
+      const x = (f.x + Math.sin(T * 0.3 * f.sp + f.ph) * 0.03) * W;
+      const y = (f.y + Math.cos(T * 0.4 * f.sp + f.ph * 1.3) * 0.02) * H;
+      const R = 11 * U, glow = cx.createRadialGradient(x, y, 0, x, y, R);
+      glow.addColorStop(0, 'rgba(232,255,120,0.9)');
+      glow.addColorStop(0.25, 'rgba(200,255,80,0.35)');
+      glow.addColorStop(1, 'rgba(180,255,60,0)');
+      cx.globalAlpha = col.flies * blink;
+      cx.fillStyle = glow; cx.beginPath(); cx.arc(x, y, R, 0, TAU); cx.fill();
+      cx.fillStyle = '#fffbd6'; cx.beginPath(); cx.arc(x, y, 1.4 * U, 0, TAU); cx.fill();
+    }
+    cx.globalCompositeOperation = 'source-over';
+    cx.globalAlpha = 1;
+  }
+
   function draw() {
     cx.globalAlpha = 1; cx.globalCompositeOperation = 'source-over';
     const sky = cx.createLinearGradient(0, 0, 0, H * 0.85);
@@ -616,12 +666,14 @@ const Scene = (() => {
         cx.fillRect(s.x * W, s.y * H, s.r, s.r);
       }
     }
+    drawMoon(sky);
     layer('back');
     ridge(horizon, rgba(col.hill));
     drawRow(0); drawRow(1);
     ridge(bandY, rgba(col.ground));
     layer('mid');
     drawRow(2);
+    drawFlies();
     layer('front');
     drawParts();
   }
@@ -630,11 +682,12 @@ const Scene = (() => {
     resize();
     window.addEventListener('resize', resize);
     for (let i = 0; i < 150; i++) stars.push({ x: Math.random(), y: Math.random() * 0.62, r: rand(1, 2.2), a: rand(0.4, 1), sp: rand(0.6, 2.2), ph: rand(0, 6) });
+    for (let i = 0; i < (gentle ? 8 : 22); i++) flies.push({ x: rand(0.03, 0.97), y: rand(0.6, 0.86), sp: rand(0.5, 1.4), ph: rand(0, 6) });
     requestAnimationFrame(frame);
   }
 
   return {
-    init, setMood, plant, unplant, clear, sparkle, fall, effect,
-    gust(a) { breeze = Math.min(1, breeze + a); },
+    init, setMood, plant, unplant, clear, decorate, sparkle, fall, effect,
+    gust(a) { breeze = Math.min(1, breeze + (gentle ? a * 0.3 : a)); },
   };
 })();
